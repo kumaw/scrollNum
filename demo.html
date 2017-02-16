@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <canvas id="myCanvas">
+        
+    </canvas>
+</body>
+<script type="text/javascript">
+var score = function(id, config) {
+    this.canvas = document.getElementById(id),
+        this.fontSize = config.fontSize || "18";
+    this.fontWidth = config.fontWidth || 18;
+    this.ctx = this.canvas.getContext("2d");
+
+    this.w = this.canvas.width;
+    this.canvas.height = this.fontSize + 14;
+    this.h = this.canvas.height;
+    this.config = config;
+    //新数字分解后数组
+    this.mub_list = [],
+        this.length = 1;
+    //默认数字
+    this.all_mub = "0";
+
+    var ctx = this.ctx;
+    ctx.font = this.fontSize + "px ProximaNova-Extrabold";
+    var gradient = ctx.createLinearGradient(0, 0, 0, this.h);
+    ctx.shadowColor = "#000";
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    gradient.addColorStop("0.7", "#ffe400");
+    gradient.addColorStop("1", "#ff9600");
+    ctx.fillStyle = gradient;
+}
+score.prototype = {
+    update: function(n) {
+
+        this.mub_list = this.all_mub.toString().split("");
+        //长度对比，可能多位可能少位
+        var len = this.mub_list.length - n.toString().length;
+        this.length = n.toString().length;
+        if (len < 0) {
+            //新数字位数长,旧数字补位
+            for (var i = 0; i < -len; i++) {
+                this.all_mub = ' ' + this.all_mub + '';
+            }
+        } else {
+            //新数字位数短
+        }
+
+        var k2 = n.toString().split(""),
+            k1 = this.all_mub.toString().split("");
+        //右对齐
+        var left = this.w - k2.length * this.fontWidth - 20;
+        for (var i = 0; i < k2.length; i++) {
+            k1[i] == " " && (k1[i] = "0");
+            this.mub_list[i] = new a_mub(k1[i], left + this.fontWidth * (i), parseInt(k2[i]), 9 - i, this.fontSize, this.config);
+        }
+        this.all_mub = n.toString();
+    },
+    draw: function() {
+        var _self = this;
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        for (var i = 0; i < this.length; i++) {
+            if (this.mub_list[i] != null) {
+                this.mub_list[i].dr(this.ctx);
+                this.mub_list[i].move();
+            }
+        }
+        this.stimer = requestAnimFrame(function() {
+            _self.draw();
+        });
+    }
+}
+//单位数字动画
+var a_mub = function(a, x, n, speed, h, config) {
+    this.a = a; //当前停止的数字
+    this.n = n; //更新到的数字
+    this.x = x; //横坐标
+    this.h = h;
+    this.speed = speed; //转动速度
+    this.y = -this.h * 4;
+    //滚动队列
+    this.nub = [];
+    this.config = config;
+    this.__init();
+}
+a_mub.prototype = {
+    __init: function() {
+        //连续滚动
+        //初始化滚动队列，中间数字为默认数字
+        if (this.config.continuous) {
+            this.nub[5] = this.a;
+            for (var i = 6; i < 10; i++) {
+                this.nub[i - 1] == 0 ? this.nub[i] = 9 : this.nub[i] = this.nub[i - 1] - 1;
+            }
+            for (var i = 4; i >= 0; i--) {
+                this.nub[i + 1] == 9 ? this.nub[i] = 0 : this.nub[i] = this.nub[i + 1] + 1;
+            }
+        } else {
+            this.n
+
+            //断续滚动
+            this.nub[4] = this.n;
+            this.nub[5] = this.a;
+        }
+    },
+    dr: function(ctx, fontSize) {
+
+
+        for (var i = 0; i < this.nub.length; i++) {
+            var _y = this.y + i * this.h;
+            if (_y > 0 && _y < this.h * 2) {
+
+                ctx.fillText(this.nub[i], this.x, _y);
+            }
+        }
+    },
+    move: function() {
+        if (this.n != this.nub[5]) {
+            this.y += 7.5 / this.speed * 5;
+            if ((this.h * 4 + this.y) >= this.h) {
+                this.nub.splice(0, 0, this.nub.pop());
+                this.y = -this.h * 4;
+            }
+        }
+    }
+}
+window.requestAnimFrame = (function() {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback, element) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+})();
+window.cancelAFrame = (function() {
+    return window.cancelAnimationFrame ||
+        window.webkitCancelAnimationFrame ||
+        window.mozCancelAnimationFrame ||
+        window.oCancelAnimationFrame ||
+        function(id) {
+            window.clearTimeout(id);
+        };
+})();
+//计入数字
+var score1 = 1911;
+var s1 = new score("myCanvas", {
+    fontSize: 200,
+    fontWidth: 140,
+    continuous: false
+});
+s1.draw();    
+s1.update(111);
+</script>
+</html>
+
